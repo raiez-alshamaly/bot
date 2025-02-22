@@ -1,20 +1,23 @@
+import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
+from aiogram.types import Message
+from aiogram.filters import Command
 from config import TOKEN
-from database import session, User, Transaction
+from database import session, User
 
-# تفعيل السجلات
+# إعداد تسجيل السجلات
 logging.basicConfig(level=logging.INFO)
 
+# تهيئة البوت والموزع (Dispatcher)
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
 # 📌 أمر بدء البوت
-@dp.message_handler(commands=['start'])
-async def start_command(message: types.Message):
+@dp.message(Command("start"))
+async def start_command(message: Message):
     user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
-    
+
     if not user:
         new_user = User(
             telegram_id=message.from_user.id,
@@ -25,43 +28,14 @@ async def start_command(message: types.Message):
         )
         session.add(new_user)
         session.commit()
-        await message.reply(f"🎉 مرحباً {message.from_user.username}!\nتم تسجيلك في البوت ✅")
-
+        await message.answer(f"🎉 مرحباً {message.from_user.username}!\nتم تسجيلك في البوت ✅")
     else:
-        await message.reply(f"👋 مرحباً مجدداً {message.from_user.username}!\nرصيدك الحالي: {user.balance}$")
+        await message.answer(f"👋 مرحباً مجدداً {message.from_user.username}!\nرصيدك الحالي: {user.balance}$")
 
-# 📌 أمر شحن الرصيد
-@dp.message_handler(commands=['charge'])
-async def charge_command(message: types.Message):
-    user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
-    
-    if not user:
-        await message.reply("❌ يجب عليك التسجيل أولاً باستخدام /start")
-        return
+# 📌 تشغيل البوت
+async def main():
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
 
-    await message.reply("💳 أرسل المبلغ وطريقة الدفع وسيتم مراجعته.")
-
-# 📌 أمر طلب السحب
-@dp.message_handler(commands=['withdraw'])
-async def withdraw_command(message: types.Message):
-    user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
-    
-    if not user:
-        await message.reply("❌ يجب عليك التسجيل أولاً باستخدام /start")
-        return
-
-    await message.reply("🚀 أدخل المبلغ المطلوب سحبه.")
-
-# 📌 أمر عرض الرصيد
-@dp.message_handler(commands=['balance'])
-async def balance_command(message: types.Message):
-    user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
-    
-    if not user:
-        await message.reply("❌ يجب عليك التسجيل أولاً باستخدام /start")
-        return
-
-    await message.reply(f"💰 رصيدك الحالي: {user.balance}$")
-
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+if __name__ == "__main__":
+    asyncio.run(main())
