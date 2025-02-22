@@ -1,6 +1,4 @@
+
 aiogram
-psycopg2
-sqlalchemy
-aiogram==3.0.0
 mysql-connector-python
 sqlalchemy
