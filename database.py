@@ -3,6 +3,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import datetime
 from config import DB_URL
 
+# إنشاء الجلسة
 Base = declarative_base()
 engine = create_engine(DB_URL)
 Session = sessionmaker(bind=engine)
@@ -41,16 +42,6 @@ class Transaction(Base):
     payment_method = Column(String(50))
     status = Column(String(20), default="pending")
     transaction_id = Column(Text, unique=True)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
-
-# جدول طلبات السحب
-class WithdrawRequest(Base):
-    __tablename__ = "withdraw_requests"
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    amount = Column(DECIMAL(10,2), nullable=False)
-    status = Column(String(20), default="pending")
     created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
 
 # إنشاء الجداول في قاعدة البيانات
