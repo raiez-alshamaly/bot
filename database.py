@@ -1,48 +1,26 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DECIMAL, TIMESTAMP, Text
-from sqlalchemy.orm import declarative_base, sessionmaker
-import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.orm import sessionmaker, declarative_base
 from config import DB_URL
 
-# إنشاء الجلسة
-Base = declarative_base()
-engine = create_engine(DB_URL)
-Session = sessionmaker(bind=engine)
-session = Session()
+# إنشاء الاتصال بقاعدة البيانات
+engine = create_engine(DB_URL, echo=True)
 
-# جدول المستخدمين
+# تعريف الجلسة
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+session = SessionLocal()
+
+# تعريف قاعدة البيانات
+Base = declarative_base()
+
 class User(Base):
     __tablename__ = "users"
-    
-    id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String(50), unique=True, nullable=False)
-    password = Column(Text, nullable=False)
-    referral_link = Column(Text, unique=True)
-    balance = Column(DECIMAL(10,2), default=0.00)
-    referred_by = Column(Integer, ForeignKey("users.id"), nullable=True)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
 
-# جدول الإداريين
-class Admin(Base):
-    __tablename__ = "admins"
-    
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String(50), unique=True, nullable=False)
-    role = Column(String(20), nullable=False)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
-
-# جدول المعاملات
-class Transaction(Base):
-    __tablename__ = "transactions"
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    amount = Column(DECIMAL(10,2), nullable=False)
-    payment_method = Column(String(50))
-    status = Column(String(20), default="pending")
-    transaction_id = Column(Text, unique=True)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
+    username = Column(String(50), nullable=False)
+    password = Column(String(100), nullable=False)
+    referral_link = Column(String(255), nullable=True)
+    balance = Column(Float, default=0.0)
 
 # إنشاء الجداول في قاعدة البيانات
-Base.metadata.create_all(engine)
+Base.metadata.create_all(bind=engine)
