@@ -9,7 +9,7 @@ from database import session, User
 # إعداد تسجيل السجلات
 logging.basicConfig(level=logging.INFO)
 
-# تهيئة البوت والموزع (Dispatcher)
+# تهيئة البوت والموزع
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
