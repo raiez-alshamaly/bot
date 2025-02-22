@@ -4,6 +4,7 @@ from aiogram.utils import executor
 from config import TOKEN
 from database import session, User, Transaction
 
+# تفعيل السجلات
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=TOKEN)
